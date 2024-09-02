@@ -75,23 +75,26 @@ local context_range = cache.memoize(function(node, query)
   for _, match in query:iter_matches(node, bufnr, 0, -1, { max_start_depth = 0 }) do
     local r = false
 
-    --- @cast match table<integer,TSNode>
+    --- @cast match table<integer,TSNode[]>
 
-    for id, node0 in pairs(match) do
-      local srow, scol, erow, ecol = node0:range()
-
+    for id, nodes in pairs(match) do
       local name = query.captures[id] -- name of the capture in the query
-      if not r and name == 'context' then
-        r = node == node0
-      elseif name == 'context.start' then
-        range[1] = srow
-        range[2] = scol
-      elseif name == 'context.final' then
-        range[3] = erow
-        range[4] = ecol
-      elseif name == 'context.end' then
-        range[3] = srow
-        range[4] = scol
+
+      for _, node0 in ipairs(nodes) do
+        local srow, scol, erow, ecol = node0:range()
+
+        if not r and name == 'context' then
+          r = node == node0
+        elseif name == 'context.start' then
+          range[1] = srow
+          range[2] = scol
+        elseif name == 'context.final' then
+          range[3] = erow
+          range[4] = ecol
+        elseif name == 'context.end' then
+          range[3] = srow
+          range[4] = scol
+        end
       end
     end
 
